@@ -102,26 +102,30 @@ class YamlMagic {
     final indent = '  ' * indentLevel;
 
     map.forEach((key, value) {
-      if (value is! YamlComment) {
-        sink.write('$indent${shouldAddHyphen ? '- ' : ''}$key: ');
-      }
       if (value is YamlComment) {
-        sink.writeln(value.copyWith(indentLevel: indentLevel).toString());
-      } else if (value is Map<String, dynamic>) {
-        sink.writeln();
-        _writeMapEntries(value, sink, indentLevel: indentLevel + 1);
-      } else if (value is Iterable) {
-        sink.writeln();
-        for (var item in value) {
-          if (item is Map<String, dynamic>) {
-            _writeMapEntries(item, sink,
-                indentLevel: indentLevel + 1, shouldAddHyphen: true);
-          } else {
-            sink.writeln('$indent  - ${_formatValue(item, shouldWrap: false)}');
-          }
-        }
+        value = value.indentLevel > 0
+            ? value
+            : value.copyWith(indentLevel: indentLevel);
+        sink.writeln(value.toString());
       } else {
-        sink.writeln(_formatValue(value));
+        sink.write('$indent${shouldAddHyphen ? '- ' : ''}$key: ');
+        if (value is Map<String, dynamic>) {
+          sink.writeln();
+          _writeMapEntries(value, sink, indentLevel: indentLevel + 1);
+        } else if (value is Iterable) {
+          sink.writeln();
+          for (var item in value) {
+            if (item is Map<String, dynamic>) {
+              _writeMapEntries(item, sink,
+                  indentLevel: indentLevel + 1, shouldAddHyphen: true);
+            } else {
+              sink.writeln(
+                  '$indent  - ${_formatValue(item, shouldWrap: false)}');
+            }
+          }
+        } else {
+          sink.writeln(_formatValue(value));
+        }
       }
     });
   }

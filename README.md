@@ -1,7 +1,7 @@
 # YamlMagic
 [![pub package](https://img.shields.io/pub/v/yaml_magic.svg)](https://pub.dartlang.org/packages/yaml_magic) [![GitHub license](https://img.shields.io/github/license/itisnajim/yaml_magic)](https://github.com/itisnajim/yaml_magic/blob/master/LICENSE)  [![GitHub issues](https://img.shields.io/github/issues/itisnajim/yaml_magic)](https://github.com/itisnajim/yaml_magic/issues)
 
-YamlMagic is a Flutter package that provides utilities for working with YAML files. It allows you to load, modify (edit and manipulate), and save YAML files seamlessly.
+YamlMagic is a Dart & Flutter package that provides utilities for working with YAML files. It allows you to load, modify (edit and manipulate), and save YAML files seamlessly.
 
 ## Features
 
@@ -15,7 +15,7 @@ Add the following dependency to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  yaml_magic: ^1.0.1+1
+  yaml_magic: ^1.0.1+2
 ```
 
 ## Usage
