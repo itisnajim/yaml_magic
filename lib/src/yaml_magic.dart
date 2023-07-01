@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:yaml/yaml.dart';
+
 import 'exceptions/yaml_io_exception.dart';
 import 'extensions/yaml.dart';
+import 'models/yaml_comment.dart';
 
 /// Use the `YamlMagic` class to load, modify (edit and manipulate), and save YAML files.
 ///
@@ -62,7 +64,7 @@ class YamlMagic {
     final file = File('$path.tmp');
     final sink = file.openWrite(); // Open the file for writing
 
-    sink.writeln('# This YAML file was generated using YamlMagic.');
+    sink.writeln('# This YAML file has been written using YamlMagic.');
     _writeMapEntries(_map, sink);
 
     await sink.flush();
@@ -84,6 +86,13 @@ class YamlMagic {
     }
   }
 
+  /// Adds a comment to the YAML file.
+  ///
+  /// The [comment] parameter specifies the comment to be added.
+  void addComment(YamlComment comment) {
+    map.addAll({YamlComment.key: comment});
+  }
+
   void _writeMapEntries(
     Map<String, dynamic> map,
     IOSink sink, {
@@ -93,8 +102,12 @@ class YamlMagic {
     final indent = '  ' * indentLevel;
 
     map.forEach((key, value) {
-      sink.write('$indent${shouldAddHyphen ? '- ' : ''}$key: ');
-      if (value is Map<String, dynamic>) {
+      if (value is! YamlComment) {
+        sink.write('$indent${shouldAddHyphen ? '- ' : ''}$key: ');
+      }
+      if (value is YamlComment) {
+        sink.writeln(value.copyWith(indentLevel: indentLevel).toString());
+      } else if (value is Map<String, dynamic>) {
         sink.writeln();
         _writeMapEntries(value, sink, indentLevel: indentLevel + 1);
       } else if (value is Iterable) {

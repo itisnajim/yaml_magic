@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
 
 import 'package:yaml_magic/yaml_magic.dart';
 
@@ -8,26 +7,20 @@ void main() {
   group('YamlMagic', () {
     // Test case for loading a YAML file
     test('Load YAML file', () {
-      final currentDirectory = '${Directory.current.path}/test/';
-      const ymlName = 'test.yaml';
-      final ymlPath = path.join(currentDirectory, ymlName);
+      final path = 'test/test.yaml';
+      final yamlMagic = YamlMagic.load(path);
 
-      final yamlMagic = YamlMagic.load(ymlPath);
-
-      expect(yamlMagic.path, equals(ymlPath));
+      expect(yamlMagic.path, equals(path));
     });
 
     // Test case for saving a YAML file
     test('Save YAML file', () async {
       // Create a temporary file for testing
-      final currentDirectory = '${Directory.current.path}/test/';
-      const ymlName = 'test.yaml';
-      final ymlPath = path.join(currentDirectory, ymlName);
-
-      final yml = File(ymlPath);
+      final path = 'test/test.yaml';
+      final yml = File(path);
       yml.createSync();
 
-      final yamlMagic = YamlMagic.load(ymlPath);
+      final yamlMagic = YamlMagic.load(path);
 
       // Modify the YAML object or add key-value pairs
       yamlMagic.map = {
@@ -39,7 +32,11 @@ void main() {
             42,
             {
               'country': 'Morocco',
-              'devs': ['itisnajim', 'itisnajim']
+              YamlComment.key: YamlComment(
+                'A Magician who turns lines of code into mesmerizing software solutions with a wave of their hand.',
+                linesMaxlength: 64,
+              ),
+              'devs': ['itisnajim']
             },
             94,
             'yolo',
@@ -69,7 +66,7 @@ void main() {
       await yamlMagic.save();
 
       // Verify that the file is saved successfully
-      final savedFile = File(ymlPath);
+      final savedFile = File(path);
       expect(savedFile.existsSync(), isTrue);
     });
   });

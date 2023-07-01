@@ -1,4 +1,5 @@
 # YamlMagic
+[![pub package](https://img.shields.io/pub/v/yaml_magic.svg)](https://pub.dartlang.org/packages/yaml_magic) [![GitHub license](https://img.shields.io/github/license/itisnajim/yaml_magic)](https://github.com/itisnajim/yaml_magic/blob/master/LICENSE)  [![GitHub issues](https://img.shields.io/github/issues/itisnajim/yaml_magic)](https://github.com/itisnajim/yaml_magic/issues)
 
 YamlMagic is a Flutter package that provides utilities for working with YAML files. It allows you to load, modify (edit and manipulate), and save YAML files seamlessly.
 
@@ -47,6 +48,21 @@ To add or update a value in the YAML document, use the index operator ([]=):
 ```dart
 yamlMagic['new_key'] = 'new_value';
 ```
+
+### Adding Comments
+
+Two ways to add comments to your YAML document using the `addComment` method or by nesting a `YamlComment` object within a key-value pair. 
+
+```dart
+yamlMagic.addComment(YamlComment('Comment text content here!'));
+// or
+yamlMagic['new_key'] = {
+  YamlComment.key: YamlComment('Comment text content here!'),
+  'foo': 'bar',
+};
+```
+
+`YamlComment` constructor has a property `linesMaxlength` type `int` to define the maximum line length when splitting the comment into multiple lines. Use 0 (default) for no line length limit.
 
 ### Saving Changes
 
