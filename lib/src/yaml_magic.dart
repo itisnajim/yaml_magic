@@ -38,13 +38,8 @@ class YamlMagic {
     if (content.trim().isEmpty) return;
 
     _document = loadYamlDocument(content);
-
     if (_document.contents is YamlMap) {
-      final topMap = _document.contents as YamlMap;
-
-      for (final key in topMap.keys) {
-        _map[key.toString()] = topMap[key];
-      }
+      map = (_document.contents as YamlMap).toMap();
     }
   }
 
@@ -60,7 +55,7 @@ class YamlMagic {
   }
 
   /// Saves the changes made to the YAML file.
-  Future<void> save() async {
+  Future<String> save() async {
     final file = File('$path.tmp');
     final sink = file.openWrite(); // Open the file for writing
 
@@ -84,6 +79,7 @@ class YamlMagic {
     if (await backupFile.exists()) {
       await backupFile.delete();
     }
+    return toString();
   }
 
   /// Adds a comment to the YAML file.
@@ -93,47 +89,87 @@ class YamlMagic {
     map.addAll({YamlComment.key: comment});
   }
 
-  void _writeMapEntries(
+  String _writeMapEntries(
     Map<String, dynamic> map,
-    IOSink sink, {
-    int indentLevel = 0,
-    bool shouldAddHyphen = false,
+    StringSink sink, {
+    int level = 0,
+    int arrayItemIndex = -1, // -1 means map it's not a list item
   }) {
-    final indent = '  ' * indentLevel;
-
+    var keyValueIndex = 0;
     map.forEach((key, value) {
       if (value is YamlComment) {
         value = value.indentLevel > 0
             ? value
-            : value.copyWith(indentLevel: indentLevel);
-        sink.writeln(value.toString());
+            : value.copyWith(
+                indentLevel: level + (arrayItemIndex > -1 ? 1 : 0),
+              );
+        sink.writeln(value);
       } else {
-        sink.write('$indent${shouldAddHyphen ? '- ' : ''}$key: ');
+        final indent = '  ' * level;
+        sink.write(
+          "$indent${arrayItemIndex > -1 && keyValueIndex == 0 ? '- ' : arrayItemIndex > -1 ? '  ' : ''}",
+        );
+        sink.write('$key:');
+        /*print(
+          'key: $key value: $value index $arrayItemIndex level: $level keyValueIndex $keyValueIndex',
+        );*/
         if (value is Map<String, dynamic>) {
           sink.writeln();
-          _writeMapEntries(value, sink, indentLevel: indentLevel + 1);
+          _writeMapEntries(
+            value,
+            sink,
+            level: level + 1 + (arrayItemIndex > -1 ? 1 : 0),
+          );
         } else if (value is Iterable) {
           sink.writeln();
+          var index = 0;
           for (var item in value) {
             if (item is Map<String, dynamic>) {
-              _writeMapEntries(item, sink,
-                  indentLevel: indentLevel + 1, shouldAddHyphen: true);
+              _writeMapEntries(
+                item,
+                sink,
+                level: level + 1,
+                arrayItemIndex: index,
+              );
             } else {
-              sink.writeln(
-                  '$indent  - ${_formatValue(item, shouldWrap: false)}');
+              final extraIndent = arrayItemIndex > -1 ? '  ' : '';
+              sink.write("$extraIndent$indent  - ");
+              final arrayItem = _formatValue(item, shouldWrap: false);
+              sink.writeln(arrayItem);
             }
+            index++;
           }
         } else {
-          sink.writeln(_formatValue(value));
+          // dynamic
+          final formatedValue = _formatValue(value);
+          sink.writeln(' $formatedValue');
         }
       }
+      keyValueIndex++;
     });
+
+    return sink.toString();
   }
 
   String _formatValue(dynamic value, {bool shouldWrap = true}) {
     if (value is String && shouldWrap) return '"$value"';
     return value == null ? '' : value.toString();
   }
+
+  @override
+  String toString() {
+    return _writeMapEntries(_map, StringBuffer());
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is YamlMagic &&
+          runtimeType == other.runtimeType &&
+          toString() == other.toString();
+
+  @override
+  int get hashCode => toString().hashCode;
 
   dynamic _normalizedValue(String path) => convertNode(_map[path]);
 

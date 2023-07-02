@@ -5,6 +5,7 @@ YamlMagic is a Dart & Flutter package that provides utilities for working with Y
 
 ## Features
 
+- Convert a Dart `Map` object into a YAML document as a `String`.
 - Load YAML files and access their key-value pairs.
 - Add or update key-value pairs in the YAML document.
 - Save the changes made to the YAML file.
@@ -15,7 +16,7 @@ Add the following dependency to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  yaml_magic: ^1.0.1+2
+  yaml_magic: ^1.0.2
 ```
 
 ## Usage

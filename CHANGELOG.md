@@ -1,3 +1,7 @@
+## 1.0.2
+
+- add `toString` method to get the output string without writing any yaml file.
+
 ## 1.0.1+2
 
 - Make `YamlComment` `indentLevel` property controlable.

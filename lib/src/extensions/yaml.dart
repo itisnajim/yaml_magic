@@ -26,7 +26,11 @@ extension YamlMapExt on YamlMap {
 /// Otherwise, the value is returned as-is.
 dynamic convertNode(dynamic value) {
   if (value is YamlList) {
-    return value.toList();
+    var list = <dynamic>[];
+    for (var e in value) {
+      list.add(convertNode(e));
+    }
+    return list;
   }
 
   if (value is YamlMap) {
