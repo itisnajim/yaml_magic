@@ -152,9 +152,12 @@ class YamlMagic {
   }
 
   String _formatValue(dynamic value, {bool shouldWrap = true}) {
-    if (value is String && shouldWrap) return '"$value"';
+    if (value is String && shouldWrap) return '"${_escapeString(value)}"';
     return value == null ? '' : value.toString();
   }
+
+  String _escapeString(String s) =>
+      s.replaceAll('"', r'\"').replaceAll("\n", r"\n");
 
   @override
   String toString() {
