@@ -1,3 +1,13 @@
+## 1.0.3+2
+
+- Added support for multiline strings in YAML conversion. example:
+```yaml
+description: |-
+  This is a multiline string.
+  It spans across multiple lines.
+  It can contain line breaks and indentation.
+```
+
 ## 1.0.2
 
 - add `toString` method to get the output string without writing any yaml file.

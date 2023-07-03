@@ -27,7 +27,14 @@ void main() {
         "key1": "value1",
         "key2": {
           "foo": "bar",
-          "baz": {"tar": 123},
+          "baz": {
+            "tar": 123,
+            "description": '''
+This is a multiline string.
+It spans across multiple lines.
+It can contain line breaks and indentation.
+'''
+          },
           "qux": [
             42,
             {
@@ -37,6 +44,11 @@ void main() {
                 linesMaxlength: 64,
               ),
               "devs": ["itisnajim"],
+              "description": '''
+This is a multiline string.
+It spans across multiple lines.
+It can contain line breaks and indentation.
+'''
             },
             94,
             "yolo",

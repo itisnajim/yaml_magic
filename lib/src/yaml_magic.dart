@@ -141,7 +141,8 @@ class YamlMagic {
           }
         } else {
           // dynamic
-          final formatedValue = _formatValue(value);
+          final formatedValue =
+              _formatValue(value, level: level + (arrayItemIndex > -1 ? 1 : 0));
           sink.writeln(' $formatedValue');
         }
       }
@@ -151,13 +152,33 @@ class YamlMagic {
     return sink.toString();
   }
 
-  String _formatValue(dynamic value, {bool shouldWrap = true}) {
-    if (value is String && shouldWrap) return '"${_escapeString(value)}"';
+  String _formatValue(
+    dynamic value, {
+    bool shouldWrap = true,
+    int level = 0,
+  }) {
+    if (value is String) {
+      if (shouldWrap) {
+        // Check if the string contains newlines
+        if (value.contains('\n')) {
+          final indent = '  ' * (level + 1);
+          final lines = value.split('\n');
+          final formattedEscaped = lines
+              .map((line) => indent + _escapeString(line))
+              .join('\n')
+              .trimRight();
+          return '|-\n$formattedEscaped';
+        } else {
+          return '"${_escapeString(value)}"';
+        }
+      } else {
+        return _escapeString(value);
+      }
+    }
     return value == null ? '' : value.toString();
   }
 
-  String _escapeString(String s) =>
-      s.replaceAll('"', r'\"').replaceAll("\n", r"\n");
+  String _escapeString(String s) => s.replaceAll('"', r'\"');
 
   @override
   String toString() {
