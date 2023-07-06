@@ -38,6 +38,7 @@ class YamlMagic {
     if (content.trim().isEmpty) return;
 
     _document = loadYamlDocument(content);
+
     if (_document.contents is YamlMap) {
       map = (_document.contents as YamlMap).toMap();
     }
@@ -134,7 +135,7 @@ class YamlMagic {
             } else {
               final extraIndent = arrayItemIndex > -1 ? '  ' : '';
               sink.write("$extraIndent$indent  - ");
-              final arrayItem = _formatValue(item, shouldWrap: false);
+              final arrayItem = _formatValue(item);
               sink.writeln(arrayItem);
             }
             index++;
@@ -154,23 +155,18 @@ class YamlMagic {
 
   String _formatValue(
     dynamic value, {
-    bool shouldWrap = true,
     int level = 0,
   }) {
     if (value is String) {
-      if (shouldWrap) {
-        // Check if the string contains newlines
-        if (value.contains('\n')) {
-          final indent = '  ' * (level + 1);
-          final lines = value.split('\n');
-          final formattedEscaped = lines
-              .map((line) => indent + _escapeString(line))
-              .join('\n')
-              .trimRight();
-          return '|-\n$formattedEscaped';
-        } else {
-          return '"${_escapeString(value)}"';
-        }
+      // Check if the string contains newlines
+      if (value.contains('\n')) {
+        final indent = '  ' * (level + 1);
+        final lines = value.split('\n');
+        final formattedEscaped = lines
+            .map((line) => indent + _escapeString(line))
+            .join('\n')
+            .trimRight();
+        return '|-\n$formattedEscaped';
       } else {
         return _escapeString(value);
       }
