@@ -10,6 +10,16 @@ void main() {
       final path = 'test/test.yaml';
       final yamlMagic = YamlMagic.load(path);
 
+      print('CONTENT:\n$yamlMagic');
+
+      expect(yamlMagic.path, equals(path));
+    });
+
+    test('Load and Write YAML file', () async {
+      final path = 'test/test.yaml';
+      final yamlMagic = YamlMagic.load(path);
+
+      await yamlMagic.save();
       expect(yamlMagic.path, equals(path));
     });
 
@@ -39,10 +49,9 @@ It can contain line breaks and indentation.
             42,
             {
               "country": "Morocco",
-              YamlComment.key: YamlComment(
-                "A Magician who turns lines of code into mesmerizing software solutions with a wave of their hand.",
-                linesMaxlength: 64,
-              ),
+              ...YamlComment(
+                "A Magician who turns lines of code into mesmerizing software\nsolutions with a wave of their hand.",
+              ).toMap(),
               "devs": ["itisnajim"],
               "description": '''
 This is a multiline string.
@@ -85,7 +94,10 @@ It can contain line breaks and indentation.
           "list1": [1, 2, 3],
           "list2": [4, 5, 6],
           "list3": [7, 8, 9],
-        }
+        },
+        ...YamlComment(
+          "Last Comment in this Yaml file.",
+        ).toMap(),
       };
 
       // Save the YAML file

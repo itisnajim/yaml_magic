@@ -1,6 +1,10 @@
+## 1.0.4
+
+- When loading YAML content (using `YamlMagic.fromString` or `YamlMagic.load`), the package YamlMagic now has the ability to retrieve comments from the YAML content.
+
 ## 1.0.3+2
 
-- Added support for multiline strings in YAML conversion. example:
+- Add support for multiline strings in YAML conversion. example:
 ```yaml
 description: |-
   This is a multiline string.
@@ -10,7 +14,7 @@ description: |-
 
 ## 1.0.2
 
-- add `toString` method to get the output string without writing any yaml file.
+- Add `toString` method to get the output string without writing any yaml file (without calling `save` method).
 
 ## 1.0.1+2
 

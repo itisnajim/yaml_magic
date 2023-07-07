@@ -6,5 +6,5 @@
 # https://dart.dev/guides/libraries/private-files#pubspeclock.
 pubspec.lock
 
-# Avoid committing any yaml generated test file.
+# Avoid including any generated YAML test files.
 test/**/*.yaml

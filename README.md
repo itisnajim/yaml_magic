@@ -16,7 +16,7 @@ Add the following dependency to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  yaml_magic: ^1.0.3+2
+  yaml_magic: ^1.0.4
 ```
 
 ## Usage
@@ -58,12 +58,10 @@ Two ways to add comments to your YAML document using the `addComment` method or 
 yamlMagic.addComment(YamlComment('Comment text content here!'));
 // or
 yamlMagic['new_key'] = {
-  YamlComment.key: YamlComment('Comment text content here!'),
+  ...YamlComment('Comment text content here!').toMap(),
   'foo': 'bar',
 };
 ```
-
-`YamlComment` constructor has a property `linesMaxlength` type `int` to define the maximum line length when splitting the comment into multiple lines. Use 0 (default) for no line length limit.
 
 ### Saving Changes
 
