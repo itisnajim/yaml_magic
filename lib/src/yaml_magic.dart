@@ -82,10 +82,10 @@ class YamlMagic {
   }
 
   Map<String, dynamic> _mergeMapWithBreakLines(
-    Map<String, dynamic> map,
+    Map map,
     List<YamlBreakLine> breakLines, {
     int level = 0,
-    Map<String, dynamic>? currentMergedMap,
+    Map? currentMergedMap,
   }) {
     final mergedMap = <String, dynamic>{};
 
@@ -107,7 +107,7 @@ class YamlMagic {
 
       //print('map key;value: $key;$value | level: $level | number: $keyExistsCount');
 
-      if (value is Map<String, dynamic>) {
+      if (value is Map) {
         final nestedMergedMap = _mergeMapWithBreakLines(
           value,
           breakLines,
@@ -118,7 +118,7 @@ class YamlMagic {
       } else if (value is Iterable) {
         final mergedIterable = <dynamic>[];
         for (final item in value) {
-          if (item is Map<String, dynamic>) {
+          if (item is Map) {
             final nestedMergedMap = _mergeMapWithBreakLines(
               item,
               breakLines,
@@ -186,10 +186,10 @@ class YamlMagic {
   }
 
   Map<String, dynamic> _mergeMapWithComments(
-    Map<String, dynamic> map,
+    Map map,
     List<YamlComment> comments, {
     int level = 0,
-    Map<String, dynamic>? currentMergedMap,
+    Map? currentMergedMap,
   }) {
     final mergedMap = <String, dynamic>{};
 
@@ -225,7 +225,7 @@ class YamlMagic {
         }
       }
 
-      if (value is Map<String, dynamic>) {
+      if (value is Map) {
         final nestedMergedMap = _mergeMapWithComments(
           value,
           comments,
@@ -236,7 +236,7 @@ class YamlMagic {
       } else if (value is Iterable) {
         final mergedIterable = <dynamic>[];
         for (final item in value) {
-          if (item is Map<String, dynamic>) {
+          if (item is Map) {
             final nestedMergedMap = _mergeMapWithComments(
               item,
               comments,
@@ -295,7 +295,7 @@ class YamlMagic {
   /// Returns how many times a key with content: [keyString] is
   /// found in the [map], the count start from level 0 to [keyLevel]!
   int _getKeyExistsCount(
-    Map<String, dynamic> map,
+    Map map,
     String keyString, {
     int keyLevel = 0,
     int currentLevel = 0,
@@ -309,13 +309,13 @@ class YamlMagic {
 
       if (key == keyString) keyExistsCount++;
 
-      if (value is Map<String, dynamic>) {
+      if (value is Map) {
         final childKeyExistsCount = _getKeyExistsCount(value, keyString,
             keyLevel: keyLevel, currentLevel: currentLevel + 1);
         keyExistsCount += childKeyExistsCount;
       } else if (value is Iterable) {
         for (var item in value) {
-          if (item is Map<String, dynamic>) {
+          if (item is Map) {
             final childKeyExistsCount = _getKeyExistsCount(item, keyString,
                 keyLevel: keyLevel, currentLevel: currentLevel + 1);
             keyExistsCount += childKeyExistsCount;
@@ -327,18 +327,16 @@ class YamlMagic {
     return keyExistsCount;
   }
 
-  bool _isMapContainsComment(Map<String, dynamic> map, YamlComment comment) {
+  bool _isMapContainsComment(Map map, YamlComment comment) {
     return map.values.any(
       (value) =>
           (value is YamlComment && value == comment) ||
-          (value is Map<String, dynamic> &&
-              _isMapContainsComment(value, comment)) ||
+          (value is Map && _isMapContainsComment(value, comment)) ||
           value is Iterable &&
               value.any(
                 (item) =>
                     (item is YamlComment && item == comment) ||
-                    (item is Map<String, dynamic> &&
-                        _isMapContainsComment(item, comment)),
+                    (item is Map && _isMapContainsComment(item, comment)),
               ),
     );
   }
@@ -494,7 +492,7 @@ class YamlMagic {
     return toString();
   }
 
-  bool _isMagicYamlCommentExists(Map<String, dynamic> map) {
+  bool _isMagicYamlCommentExists(Map map) {
     if (map.values.isNotEmpty) {
       final firstValue = map.values.first;
 
@@ -519,7 +517,7 @@ class YamlMagic {
   void addBreakLine(YamlBreakLine breakLine) => map.addAll(breakLine.toMap());
 
   String _writeMapEntries(
-    Map<String, dynamic> map,
+    Map map,
     StringSink sink, {
     int level = 0,
     int arrayItemIndex = -1, // -1 means map it's not a list item
@@ -544,7 +542,7 @@ class YamlMagic {
         /*print(
           'key: $key value: $value index $arrayItemIndex level: $level keyValueIndex $keyValueIndex',
         );*/
-        if (value is Map<String, dynamic>) {
+        if (value is Map) {
           sink.writeln();
           _writeMapEntries(
             value,
@@ -555,7 +553,7 @@ class YamlMagic {
           sink.writeln();
           var index = 0;
           for (var item in value) {
-            if (item is Map<String, dynamic>) {
+            if (item is Map) {
               _writeMapEntries(
                 item,
                 sink,
