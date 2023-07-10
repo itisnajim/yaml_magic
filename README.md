@@ -63,6 +63,19 @@ yamlMagic['new_key'] = {
 };
 ```
 
+### Adding Break Lines
+
+Two ways to add break lines to your YAML document using the `addBreakLine` method or by nesting a `YamlBreakLine` object within a key-value pair. 
+
+```dart
+yamlMagic.addBreakLine(YamlBreakLine(count: 1));
+// or
+yamlMagic['new_key'] = {
+  ...YamlBreakLine(count: 1).toMap(),
+  'foo': 'bar',
+};
+```
+
 ### Saving Changes
 
 To save the changes made to the YAML document, use the save method:

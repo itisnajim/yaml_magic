@@ -49,6 +49,7 @@ It can contain line breaks and indentation.
             42,
             {
               "country": "Morocco",
+              ...YamlBreakLine(count: 2).toMap(),
               ...YamlComment(
                 "A Magician who turns lines of code into mesmerizing software\nsolutions with a wave of their hand.",
               ).toMap(),
@@ -90,6 +91,10 @@ It can contain line breaks and indentation.
             }
           }
         ],
+        ...YamlComment(
+          "Last Comment after key3",
+        ).toMap(),
+        ...YamlBreakLine().toMap(),
         "key4": {
           "list1": [1, 2, 3],
           "list2": [4, 5, 6],

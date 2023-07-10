@@ -1,6 +1,8 @@
 ## 1.0.4
 
-- When loading YAML content (using `YamlMagic.fromString` or `YamlMagic.load`), the package YamlMagic now has the ability to retrieve comments from the YAML content.
+- Add retrieve comments support. When loading YAML content (using `YamlMagic.fromString` or `YamlMagic.load`), the package YamlMagic now has the ability to retrieve comments from the YAML content.
+
+- Add retrieve break lines support. When loading YAML content (using `YamlMagic.fromString` or `YamlMagic.load`), the package YamlMagic now has the ability to retrieve break lines from the YAML content.
 
 ## 1.0.3+2
 

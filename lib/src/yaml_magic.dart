@@ -3,7 +3,7 @@ import 'package:yaml/yaml.dart';
 
 import 'exceptions/exceptions.dart';
 import 'extensions/extensions.dart';
-import 'models/yaml_comment.dart';
+import 'models/models.dart';
 
 /// Use the `YamlMagic` class to load, modify (edit and manipulate), and save YAML files.
 ///
@@ -42,7 +42,9 @@ class YamlMagic {
     _document = loadYamlDocument(content);
 
     if (_document.contents is YamlMap) {
-      _originalMap.addAll((_document.contents as YamlMap).toMap());
+      _originalMap
+        ..clear()
+        ..addAll((_document.contents as YamlMap).toMap());
       final comments = _getComments(content);
       /*print(
         'comments\n'
@@ -51,10 +53,19 @@ class YamlMagic {
             'key;value: ${e.lineKey};${e.lineValue} | '
             'number: ${e.lineKeyExistsCount}').join('\n')}',
       );*/
+      final breakLines = _getBreakLines(content);
+
+      /*print(
+        'breakLines\n'
+        '${breakLines.map((b) => 'count: ${b.count} | '
+            'key;value: ${b.lineKey};${b.lineValue} | '
+            'lineBefore: ${b.lineBefore} | '
+            'lineKeyExistsCount: ${b.lineKeyExistsCount}').join('\n')}',
+      );*/
 
       // Merge originalMap with comments
-      final mergedMap = _mergeMapWithComments(_originalMap, comments);
-
+      final mergedWithComments = _mergeMapWithComments(_originalMap, comments);
+      final mergedMap = _mergeMapWithBreakLines(mergedWithComments, breakLines);
       map = mergedMap;
     }
   }
@@ -68,6 +79,110 @@ class YamlMagic {
 
     final content = File(path).readAsStringSync();
     return YamlMagic.fromString(content: content, path: path);
+  }
+
+  Map<String, dynamic> _mergeMapWithBreakLines(
+    Map<String, dynamic> map,
+    List<YamlBreakLine> breakLines, {
+    int level = 0,
+    Map<String, dynamic>? currentMergedMap,
+  }) {
+    final mergedMap = <String, dynamic>{};
+
+    // add a break line if there a first break line in the yaml content
+    if (level == 0) {
+      final lastBreakLineIndex = breakLines.indexWhere(
+        (c) => c.lineBefore == null,
+      );
+      if (lastBreakLineIndex > -1) {
+        final breakLine = breakLines[lastBreakLineIndex];
+        mergedMap.addAll(breakLine.toMap());
+      }
+    }
+
+    // Merge the original map with the break lines
+    for (final entry in map.entries) {
+      final key = entry.key;
+      final value = entry.value;
+
+      //print('map key;value: $key;$value | level: $level | number: $keyExistsCount');
+
+      if (value is Map<String, dynamic>) {
+        final nestedMergedMap = _mergeMapWithBreakLines(
+          value,
+          breakLines,
+          level: level + 1,
+          currentMergedMap: mergedMap,
+        );
+        mergedMap[key] = nestedMergedMap;
+      } else if (value is Iterable) {
+        final mergedIterable = <dynamic>[];
+        for (final item in value) {
+          if (item is Map<String, dynamic>) {
+            final nestedMergedMap = _mergeMapWithBreakLines(
+              item,
+              breakLines,
+              level: level + 1,
+              currentMergedMap: mergedMap,
+            );
+            mergedIterable.add(nestedMergedMap);
+          } else {
+            // Find the breakLine associated with the current list value
+            final breakLineIndex = breakLines.indexWhere(
+              (c) =>
+                  c.lineKey == null &&
+                  c.lineValue ==
+                      item
+                          .toString()
+                          .trimLeft()
+                          .replaceFirst(r'[-#]', '')
+                          .trim(),
+            );
+
+            mergedIterable.add(item);
+            if (breakLineIndex > -1) {
+              final breakLine = breakLines[breakLineIndex];
+              // Add the break line after the value
+              mergedIterable.add(breakLine);
+            }
+          }
+        }
+        mergedMap[key] = mergedIterable;
+      } else {
+        // Regular value assignment
+        mergedMap[key] = value;
+      }
+
+      final keyExistsCount =
+          _getKeyExistsCount(_originalMap, key, keyLevel: level);
+
+      // Find the break line associated with the current key
+      final breakLineIndex = breakLines.indexWhere(
+        (b) =>
+            ((b.lineBefore ?? '').isNotEmpty &&
+                b.isLineBeforeComment &&
+                value is YamlComment &&
+                value.text
+                    .trim()
+                    .contains(b.lineBefore!.replaceFirst('#', '').trim())) ||
+            (b.lineKey == key &&
+                b.lineKeyExistsCount == keyExistsCount &&
+                ((b.lineValue?.toString().trim().removeQuotes() ==
+                    value
+                        .toString()
+                        .trim()
+                        .replaceFirst(r'[-#]', '')
+                        .trim()
+                        .removeQuotes()))),
+      );
+      if (breakLineIndex > -1) {
+        final breakLine = breakLines[breakLineIndex];
+        // Add the breakLine after the key-value pair
+        mergedMap[breakLine.key] = breakLine;
+      }
+    }
+
+    return mergedMap;
   }
 
   Map<String, dynamic> _mergeMapWithComments(
@@ -290,6 +405,49 @@ class YamlMagic {
     return comments;
   }
 
+  /// Retrieves break lines from the provided YAML [content] string.
+  ///
+  /// Returns a [List] of [YamlBreakLine] objects,
+  List<YamlBreakLine> _getBreakLines(String content) {
+    final breakLines = <YamlBreakLine>[];
+    final lines = content.split('\n');
+
+    for (var i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      if (line.trim().isEmpty) {
+        int count = 1;
+        var endLine = i;
+
+        // Check if it's a multi line break and count them.
+        while (
+            endLine < lines.length - 1 && lines[endLine + 1].trim().isEmpty) {
+          count++;
+          endLine++;
+        }
+
+        String? lineBefore = i > 0 ? lines[i - 1] : null;
+        final key =
+            lineBefore == null ? null : YamlComment.getKeyFromLine(lineBefore);
+        final keyLevel = key == null ? 0 : _getIndentLevel(lineBefore!);
+        final keyExistsCount = key == null
+            ? 0
+            : _getKeyExistsCount(
+                _originalMap,
+                key,
+                keyLevel: keyLevel,
+              );
+        breakLines.add(YamlBreakLine(
+          count: count,
+          lineBefore: lineBefore,
+          lineKeyExistsCount: keyExistsCount,
+        ));
+        i = endLine; // Skip to the end of the multi line breaks comment
+      }
+    }
+
+    return breakLines;
+  }
+
   int _getIndentLevel(String line) {
     int indentLevel = 0;
     int index = 0;
@@ -336,17 +494,6 @@ class YamlMagic {
     return toString();
   }
 
-  bool _isCommentLineKeyValueExists(
-    YamlComment comment,
-    List<YamlComment> comments,
-  ) =>
-      comments.any(
-        (c) =>
-            c.lineKey == comment.lineKey &&
-            c.lineValue == comment.lineValue &&
-            c != comment,
-      );
-
   bool _isMagicYamlCommentExists(Map<String, dynamic> map) {
     if (map.values.isNotEmpty) {
       final firstValue = map.values.first;
@@ -366,6 +513,11 @@ class YamlMagic {
   /// The [comment] parameter specifies the comment to be added.
   void addComment(YamlComment comment) => map.addAll(comment.toMap());
 
+  /// Adds a break line to the YAML file.
+  ///
+  /// The [breakLine] parameter specifies the break line to be added.
+  void addBreakLine(YamlBreakLine breakLine) => map.addAll(breakLine.toMap());
+
   String _writeMapEntries(
     Map<String, dynamic> map,
     StringSink sink, {
@@ -381,6 +533,8 @@ class YamlMagic {
                 indentLevel: level + (arrayItemIndex > -1 ? 1 : 0),
               );
         sink.writeln(value);
+      } else if (value is YamlBreakLine) {
+        sink.write(value);
       } else {
         final indent = '  ' * level;
         sink.write(
