@@ -1,3 +1,7 @@
+## 1.0.4+1
+
+- Fix issue when casting to Map
+
 ## 1.0.4
 
 - Add retrieve comments support. When loading YAML content (using `YamlMagic.fromString` or `YamlMagic.load`), the package YamlMagic now has the ability to retrieve comments from the YAML content.
