@@ -1,3 +1,7 @@
+## 1.0.5
+
+- Added getter for originalMap (without comments or break lines)
+
 ## 1.0.4+1
 
 - Fix issue when casting to Map
