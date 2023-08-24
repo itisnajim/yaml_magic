@@ -16,7 +16,7 @@ Add the following dependency to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  yaml_magic: ^1.0.4+1
+  yaml_magic: ^1.0.5
 ```
 
 ## Usage

@@ -348,8 +348,7 @@ class YamlMagic {
   ///
   /// Returns a [List] of [YamlComment] objects,
   List<YamlComment> _getComments(String content) {
-    final lines =
-        content.split('\n').where((l) => l.trim().isNotEmpty).toList();
+    final lines = content.split('\n').toList();
     final comments = <YamlComment>[];
 
     for (var i = 0; i < lines.length; i++) {
@@ -426,7 +425,7 @@ class YamlMagic {
           endLine++;
         }
 
-        String? lineBefore = i > 0 ? lines[i - 1] : null;
+        final String? lineBefore = i > 0 ? lines[i - 1] : null;
         final key =
             lineBefore == null ? null : YamlComment.getKeyFromLine(lineBefore);
         final keyLevel = key == null ? 0 : _getIndentLevel(lineBefore!);
@@ -465,6 +464,9 @@ class YamlMagic {
   /// Saves the changes made to the YAML file.
   Future<String> save() async {
     final file = File('$path.tmp');
+    if (!(await file.exists())) {
+      await file.create();
+    }
     final sink = file.openWrite(); // Open the file for writing
 
     if (!_isMagicYamlCommentExists(map)) {
@@ -488,7 +490,9 @@ class YamlMagic {
     if (await originalFile.exists()) {
       await originalFile.rename(backupFile.path);
     }
-    await file.rename(originalFile.path);
+    if (await file.exists()) {
+      await file.rename(originalFile.path);
+    }
     if (await backupFile.exists()) {
       await backupFile.delete();
     }
