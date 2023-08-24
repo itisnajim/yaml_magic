@@ -1,6 +1,6 @@
 name: yaml_magic
 description: A Dart+Flutter package for manipulating YAML files, providing utilities to load, add, modify / edit, and save YAML documents.
-version: 1.0.4+1
+version: 1.0.5
 repository: https://github.com/itisnajim/yaml_magic
 
 environment:

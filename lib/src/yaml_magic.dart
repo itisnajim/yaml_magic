@@ -24,6 +24,9 @@ class YamlMagic {
   /// The map representation of the YAML file.
   Map<String, dynamic> get map => _map;
 
+  /// The map representation of the YAML file (without comments or break lines)
+  Map<String, dynamic> get originalMap => _originalMap;
+
   set map(Map<String, dynamic> value) {
     _map.clear();
     _map.addAll(value);
