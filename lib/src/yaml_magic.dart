@@ -15,7 +15,10 @@ import 'models/models.dart';
 /// ```
 class YamlMagic {
   final String path;
+  final bool noWatermarkComment;
   late YamlDocument _document;
+
+  bool get _includeWatermarkComment => !noWatermarkComment;
 
   final Map<String, dynamic> _map = {};
 
@@ -36,9 +39,11 @@ class YamlMagic {
   ///
   /// The [content] parameter should contain the YAML content as a string.
   /// The [path] parameter specifies the path to the YAML file.
+  /// Optionally, [noWatermarkComment] can be set to true to exclude watermark comments.
   YamlMagic.fromString({
     required String content,
     required this.path,
+    this.noWatermarkComment = false,
   }) {
     if (content.trim().isEmpty) return;
 
@@ -77,11 +82,16 @@ class YamlMagic {
   ///
   /// Throws a [YamlIOException] if the file doesn't exist.
   /// Throws a [FileSystemException] if the operation fails.
-  factory YamlMagic.load(String path) {
+  /// Optionally, [noWatermarkComment] can be set to true to exclude watermark comments.
+  factory YamlMagic.load(String path, {bool noWatermarkComment = false}) {
     if (!File(path).existsSync()) throw YamlIOException(path);
 
     final content = File(path).readAsStringSync();
-    return YamlMagic.fromString(content: content, path: path);
+    return YamlMagic.fromString(
+      content: content,
+      path: path,
+      noWatermarkComment: noWatermarkComment,
+    );
   }
 
   Map<String, dynamic> _mergeMapWithBreakLines(
@@ -469,7 +479,7 @@ class YamlMagic {
     }
     final sink = file.openWrite(); // Open the file for writing
 
-    if (!_isMagicYamlCommentExists(map)) {
+    if (_includeWatermarkComment && !_isMagicYamlCommentExists(map)) {
       map = {
         ..._yamlMagicComment.toMap(),
         ...map,
@@ -588,28 +598,34 @@ class YamlMagic {
     return sink.toString();
   }
 
-  String _formatValue(
-    dynamic value, {
-    int level = 0,
-  }) {
+  String _formatValue(dynamic value, {int level = 0}) {
     if (value is String) {
-      // Check if the string contains newlines
-      if (value.contains('\n')) {
-        final indent = '  ' * (level + 1);
-        final lines = value.split('\n');
-        final formattedEscaped = lines
-            .map((line) => indent + _escapeString(line))
-            .join('\n')
-            .trimRight();
-        return '|-\n$formattedEscaped';
+      if (_isHashStartValue(value)) {
+        return '"$value"';
       } else {
-        if (_shouldWrapValue(value)) {
-          return '"${_escapeString(value)}"';
+        // Check if the string contains newlines
+        if (value.contains('\n')) {
+          final indent = '  ' * (level + 1);
+          final lines = value.split('\n');
+          final formattedEscaped = lines
+              .map((line) => indent + _escapeString(line))
+              .join('\n')
+              .trimRight();
+          return '|-\n$formattedEscaped';
+        } else {
+          if (_shouldWrapValue(value)) {
+            return '"${_escapeString(value)}"';
+          }
+          return _escapeString(value);
         }
-        return _escapeString(value);
       }
     }
     return value == null ? '' : value.toString();
+  }
+
+  bool _isHashStartValue(String input) {
+    input = input.trim();
+    return input.startsWith('#');
   }
 
   String _escapeString(String s) => s.replaceAll('"', r'\"');

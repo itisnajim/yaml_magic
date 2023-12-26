@@ -30,7 +30,7 @@ void main() {
       final yml = File(path);
       yml.createSync();
 
-      final yamlMagic = YamlMagic.load(path);
+      final yamlMagic = YamlMagic.load(path, noWatermarkComment: true);
 
       // Modify the YAML object or add key-value pairs
       yamlMagic.map = {
@@ -81,6 +81,7 @@ It can contain line breaks and indentation.
             "address": {
               "street": "456 Elm St",
               "city": "Los Angeles",
+              "color": "#ffffff",
               "area": [
                 "Hollywood",
                 "Beverly Hills",

@@ -1,3 +1,8 @@
+## 1.0.6
+
+- Add a possibility to remove the YamlMagic watermark comments using `noWatermarkComment` flag.
+- Enhanced YamlMagic parsing to preserve colors or values that start with `#` in content.
+
 ## 1.0.5
 
 - Added getter for originalMap (without comments or break lines)
